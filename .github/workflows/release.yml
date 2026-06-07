@@ -42,9 +42,13 @@ jobs:
           $ahk2exe = (Get-ChildItem "$work\ahk2exe" -Recurse -Filter 'Ahk2Exe.exe' | Select-Object -First 1).FullName
 
           New-Item -ItemType Directory -Force -Path 'dist' | Out-Null
-          & $ahk2exe /in 'src\WinMacKeys.ahk' /out 'dist\WinMacKeys.exe' /base $base
-          if ($LASTEXITCODE -ne 0 -or -not (Test-Path 'dist\WinMacKeys.exe')) {
-              throw "Ahk2Exe failed (exit $LASTEXITCODE)."
+          # Ahk2Exe is a GUI-subsystem app, so call it via Start-Process -Wait,
+          # otherwise PowerShell does not block and the Test-Path runs too early.
+          $proc = Start-Process -FilePath $ahk2exe `
+              -ArgumentList @('/in', 'src\WinMacKeys.ahk', '/out', 'dist\WinMacKeys.exe', '/base', $base) `
+              -NoNewWindow -Wait -PassThru
+          if ($proc.ExitCode -ne 0 -or -not (Test-Path 'dist\WinMacKeys.exe')) {
+              throw "Ahk2Exe failed (exit $($proc.ExitCode))."
           }
           Write-Host 'Built dist\WinMacKeys.exe' -ForegroundColor Green
 
