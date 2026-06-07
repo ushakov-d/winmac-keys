@@ -1,0 +1,14 @@
+# Build output
+/dist/
+*.exe
+
+# Logs / temp
+*.log
+*.tmp
+Thumbs.db
+desktop.ini
+
+# Editor / OS
+.vs/
+.idea/
+.vscode/

@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & publish
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Compiles src\WinMacKeys.ahk into a standalone .exe using the official
+      # AutoHotkey v2 base + the Ahk2Exe compiler, both fetched at build time
+      # (latest releases, so no fragile hard-coded URLs).
+      - name: Build WinMacKeys.exe
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $hdr  = @{ Authorization = "Bearer $env:GH_TOKEN"; 'User-Agent' = 'winmac-keys-ci' }
+          $work = Join-Path $env:RUNNER_TEMP 'ahkbuild'
+          New-Item -ItemType Directory -Force -Path $work | Out-Null
+
+          Write-Host 'Fetching AutoHotkey v2 (base)...'
+          $ahkRel   = Invoke-RestMethod 'https://api.github.com/repos/AutoHotkey/AutoHotkey/releases/latest' -Headers $hdr
+          $ahkAsset = $ahkRel.assets | Where-Object { $_.name -like 'AutoHotkey_*.zip' } | Select-Object -First 1
+          Invoke-WebRequest $ahkAsset.browser_download_url -Headers $hdr -OutFile "$work\ahk.zip"
+          Expand-Archive "$work\ahk.zip" -DestinationPath "$work\ahk" -Force
+          $base = (Get-ChildItem "$work\ahk" -Recurse -Filter 'AutoHotkey64.exe' | Select-Object -First 1).FullName
+
+          Write-Host 'Fetching Ahk2Exe (compiler)...'
+          $c2Rel   = Invoke-RestMethod 'https://api.github.com/repos/AutoHotkey/Ahk2Exe/releases/latest' -Headers $hdr
+          $c2Asset = $c2Rel.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1
+          Invoke-WebRequest $c2Asset.browser_download_url -Headers $hdr -OutFile "$work\ahk2exe.zip"
+          Expand-Archive "$work\ahk2exe.zip" -DestinationPath "$work\ahk2exe" -Force
+          $ahk2exe = (Get-ChildItem "$work\ahk2exe" -Recurse -Filter 'Ahk2Exe.exe' | Select-Object -First 1).FullName
+
+          New-Item -ItemType Directory -Force -Path 'dist' | Out-Null
+          & $ahk2exe /in 'src\WinMacKeys.ahk' /out 'dist\WinMacKeys.exe' /base $base
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path 'dist\WinMacKeys.exe')) {
+              throw "Ahk2Exe failed (exit $LASTEXITCODE)."
+          }
+          Write-Host 'Built dist\WinMacKeys.exe' -ForegroundColor Green
+
+      - name: Package release zip
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $stage = 'dist\WinMacKeys'
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item 'dist\WinMacKeys.exe'              $stage
+          Copy-Item 'scripts\install.ps1'              $stage
+          Copy-Item 'scripts\uninstall.ps1'            $stage
+          Copy-Item 'config\winmac-keys.example.ini'   $stage
+          Copy-Item 'README.md'                        $stage
+          Copy-Item 'LICENSE'                          $stage
+          $zip = "dist\WinMacKeys-$env:GITHUB_REF_NAME.zip"
+          Compress-Archive -Path "$stage\*" -DestinationPath $zip -Force
+          (Get-FileHash $zip -Algorithm SHA256).Hash | Out-File "$zip.sha256" -Encoding ascii
+          Write-Host "Packaged $zip" -ForegroundColor Green
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/WinMacKeys-*.zip
+            dist/WinMacKeys-*.zip.sha256
+            dist/WinMacKeys.exe
