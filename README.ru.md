@@ -24,21 +24,15 @@
 
 ## Установка
 
-**Из релиза (рекомендуется).** Скачай свежий `WinMacKeys-vX.Y.Z.zip` из [Releases](https://github.com/ushakov-d/winmac-keys/releases), распакуй и запусти:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\install.ps1
-```
-
-В архиве есть автономный `WinMacKeys.exe`, поэтому **AutoHotkey не нужен**.
-
-**Из исходников** (поставит AutoHotkey v2 через `winget`, если его нет):
+Ставится из исходников — работает на официальном рантайме AutoHotkey v2, который установщик при необходимости подтянет через `winget`:
 
 ```powershell
 git clone https://github.com/ushakov-d/winmac-keys.git
 cd winmac-keys
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
+
+Нет git? Скачай репозиторий ZIP-ом (зелёная кнопка **Code** → **Download ZIP**), распакуй и запусти `scripts\install.ps1` из распакованной папки.
 
 Установщик кладёт программу в `%LOCALAPPDATA%\Programs\WinMacKeys`, создаёт `%APPDATA%\WinMacKeys\config.ini` и регистрирует **задачу автозапуска при входе** (один UAC). Флаг `-NoAutostart` пропускает автозапуск; `uninstall.ps1` всё удаляет (`-RemoveConfig` — вместе с конфигом).
 
@@ -58,7 +52,6 @@ method = altshift
 
 ## Заметки
 
-- **Неподписанный `.exe`** — SmartScreen может предупредить при первом запуске (*Подробнее → Выполнить в любом случае*); к каждому релизу есть `.sha256`.
 - **Своп Ctrl ⇄ Win** переносит `Ctrl+C/V/Z` на бывшую клавишу Win, поэтому **выключен по умолчанию**.
 - Автозапуск — задача Планировщика (вход, с правами, по SID); нужен один UAC при установке, ставь под аккаунтом с правами админа.
 - Работает с кириллицей/пробелами в имени пользователя (пути из переменных окружения, файлы в UTF-8).
@@ -66,15 +59,15 @@ method = altshift
 ## Совместимость
 
 - **Протестировано:** Windows 11 Pro 25H2 (сборка 26200.8457), x64 — AutoHotkey v2.0.26, Windows PowerShell 5.1.
-- **Должно работать и на** Windows 10/11 (x64) — не все сборки проверены. `Win+Shift+S` требует «Ножницы» (Windows 10 1809+); установка из исходников — `winget`.
+- **Должно работать и на** Windows 10/11 (x64) — не все сборки проверены. `Win+Shift+S` требует «Ножницы» (Windows 10 1809+); установщик тянет AutoHotkey через `winget`.
 
-## Сборка
+## Разработка
+
+Запуск скрипта напрямую во время правок:
 
 ```powershell
-Ahk2Exe.exe /in src\WinMacKeys.ahk /out dist\WinMacKeys.exe /base AutoHotkey64.exe
+AutoHotkey64.exe src\WinMacKeys.ahk
 ```
-
-CI собирает `.exe` и публикует релиз автоматически при пуше тега `vX.Y.Z`.
 
 ## Лицензия
 

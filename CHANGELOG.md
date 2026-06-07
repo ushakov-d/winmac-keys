@@ -19,6 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - INI-based configuration in `%APPDATA%\WinMacKeys\config.ini`.
 - Tray menu: Suspend, Edit config, Reload, Exit.
 - `install.ps1` / `uninstall.ps1` with a SID-based logon Scheduled Task.
-- GitHub Actions: PowerShell lint (CI) and `.exe` build + release on tags.
+- GitHub Actions: PowerShell lint (CI) and automated release on tags.
 
 [0.1.0]: https://github.com/ushakov-d/winmac-keys/releases/tag/v0.1.0

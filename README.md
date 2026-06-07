@@ -24,21 +24,15 @@ Windows has **no built-in way** to switch the input language with Caps Lock — 
 
 ## Install
 
-**From a release (recommended).** Download the latest `WinMacKeys-vX.Y.Z.zip` from [Releases](https://github.com/ushakov-d/winmac-keys/releases), unzip, and run:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\install.ps1
-```
-
-The bundle includes a standalone `WinMacKeys.exe`, so **AutoHotkey is not required**.
-
-**From source** (installs AutoHotkey v2 via `winget` if missing):
+Install from source — it runs on the official AutoHotkey v2 runtime, which the installer fetches via `winget` if it's missing:
 
 ```powershell
 git clone https://github.com/ushakov-d/winmac-keys.git
 cd winmac-keys
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
+
+No git? Download the repo as a ZIP (green **Code** button → **Download ZIP**), unzip, and run `scripts\install.ps1` from the extracted folder.
 
 The installer copies the app to `%LOCALAPPDATA%\Programs\WinMacKeys`, writes a default `%APPDATA%\WinMacKeys\config.ini`, and registers a **logon Scheduled Task** (one UAC prompt). Use `-NoAutostart` to skip autostart; `uninstall.ps1` removes everything (add `-RemoveConfig` to drop the config too).
 
@@ -58,7 +52,6 @@ See [`config/winmac-keys.example.ini`](config/winmac-keys.example.ini) for the f
 
 ## Notes
 
-- **Unsigned `.exe`** — SmartScreen may warn on first run (*More info → Run anyway*); each release ships a `.sha256`.
 - **Ctrl ⇄ Win swap** moves `Ctrl+C/V/Z` onto the former Win key, so it's **off by default**.
 - Autostart is a per-user **Scheduled Task** (logon, elevated, keyed by SID) — needs one UAC at install, so run as a local administrator.
 - Works with Cyrillic / spaced user names (paths come from environment variables, files are UTF-8).
@@ -66,15 +59,15 @@ See [`config/winmac-keys.example.ini`](config/winmac-keys.example.ini) for the f
 ## Compatibility
 
 - **Tested:** Windows 11 Pro 25H2 (build 26200.8457), x64 — AutoHotkey v2.0.26, Windows PowerShell 5.1.
-- **Should also work on** Windows 10/11 (x64) — not all builds verified. `Win+Shift+S` needs the Snipping Tool (Windows 10 1809+); installing from source needs `winget`.
+- **Should also work on** Windows 10/11 (x64) — not all builds verified. `Win+Shift+S` needs the Snipping Tool (Windows 10 1809+); the installer uses `winget` to fetch AutoHotkey.
 
-## Build
+## Development
+
+Run the script directly while hacking on it:
 
 ```powershell
-Ahk2Exe.exe /in src\WinMacKeys.ahk /out dist\WinMacKeys.exe /base AutoHotkey64.exe
+AutoHotkey64.exe src\WinMacKeys.ahk
 ```
-
-CI builds the `.exe` and publishes a release automatically on every `vX.Y.Z` tag.
 
 ## License
 
