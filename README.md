@@ -52,6 +52,7 @@ See [`config/winmac-keys.example.ini`](config/winmac-keys.example.ini) for the f
 
 ## Notes
 
+- **Kernel anti-cheats block it.** FACEIT, Vanguard, EAC and friends disable the low-level keyboard hooks AutoHotkey needs, so remaps silently stop working *inside* those games while continuing to work everywhere else. There is no software fix — if that affects you, move the remaps into the keyboard itself: see [`hardware/keychron-k10-pro`](hardware/keychron-k10-pro) for the same layout as a QMK/VIA keymap.
 - **Ctrl ⇄ Win swap** moves `Ctrl+C/V/Z` onto the former Win key, so it's **off by default**.
 - Autostart is a per-user **Scheduled Task** (logon, elevated, keyed by SID) — needs one UAC at install, so run as a local administrator.
 - Works with Cyrillic / spaced user names (paths come from environment variables, files are UTF-8).
